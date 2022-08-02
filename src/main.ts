@@ -57,6 +57,13 @@ const main = async () => {
     await stack.setAllConfig(configMap);
   }
 
+  if (config.plugins.length > 0) {
+    const ws = await LocalWorkspace.create({});
+    config.plugins.forEach(async (plugin) => {
+      await ws.installPlugin(plugin.name, plugin.version, plugin.kind);
+    });
+  }
+
   if (config.refresh) {
     core.startGroup(`Refresh stack on ${config.stackName}`);
     await stack.refresh({ onOutput });

@@ -15,6 +15,10 @@ inputs:
     description: 'Location of your Pulumi files. Defaults to ./'
     required: false
     default: ./
+  plugins:
+    description: 'List of plugins your project depends on. eg. resource aws v5.9.2'
+    required: false
+    default: []
   comment-on-pr:
     description: 'If true, a comment will be created with results'
     required: false
