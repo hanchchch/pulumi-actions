@@ -34,6 +34,11 @@ export const config = rt
     command: command,
     stackName: rt.String,
     workDir: rt.String,
+    plugins: rt.Array(
+      rt
+        .Record({ name: rt.String, version: rt.String })
+        .And(rt.Partial({ kind: rt.String })),
+    ),
     commentOnPr: rt.Boolean,
     options: options,
     // Information inferred from the environment that must be present
@@ -58,6 +63,7 @@ export async function makeConfig(): Promise<Config> {
     command: getInput('command', { required: true }),
     stackName: getInput('stack-name', { required: true }),
     workDir: getInput('work-dir') || './',
+    plugins: getInput('plugins') || [],
     secretsProvider: getInput('secrets-provider'),
     cloudUrl: getInput('cloud-url'),
     githubToken: getInput('github-token'),
@@ -78,7 +84,7 @@ export async function makeConfig(): Promise<Config> {
       policyPackConfigs: parseArray(getInput('policyPackConfigs')),
       editCommentOnPr: parseBoolean(getInput('edit-pr-comment')),
       userAgent: 'pulumi/actions@v3',
-      pulumiVersion: getInput('pulumi-version') || "^3",
+      pulumiVersion: getInput('pulumi-version') || '^3',
       color: getInput('color'),
     },
   });

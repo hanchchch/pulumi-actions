@@ -273,3 +273,57 @@ jobs:
           upsert: true
           refresh: true
           config-map: "{name: {value: hostname, secret: false}}"
+
+  test-plugins-install:
+    needs: install-and-build
+    if: ${{ needs.install-and-build.outputs.changed == 'true' }}
+    runs-on: ${{ matrix.os }}
+    name: Inputs on ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+      fail-fast: false
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Download dist artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: dist
+          path: dist
+
+      - name: Get npm cache directory
+        id: npm-cache-dir
+        run: |
+          echo "::set-output name=dir::$(npm config get cache)"
+
+      - uses: actions/cache@v3
+        id: npm-cache
+        with:
+          path: ${{ steps.npm-cache-dir.outputs.dir }}
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 16.x
+
+      - run: npm install
+        working-directory: .github/test-stacks/nodejs
+
+      - uses: ./
+        env:
+          PULUMI_CONFIG_PASSPHRASE: not-a-secret
+        with:
+          command: up
+          cloud-url: file://~
+          stack-name: dev
+          work-dir: .github/test-stacks/nodejs
+          upsert: true
+          refresh: true
+          plugins:
+            - name: aws
+              version: v5.9.2
+              kind: resource
+          config-map: "{name: {value: hostname, secret: false}}"
